@@ -21,7 +21,7 @@ jobs:
     outputs:
       artifact-id: ${{ steps.upload-artifact.outputs.artifact-id }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: recursive
         fetch-tags: true
@@ -30,10 +30,10 @@ jobs:
     - name: Git setup
       run: git config --global commit.gpgsign false && git config --global user.email olauncher@example.com && git config --global user.name olauncher
     - name: Set up JDK 11
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '11'
-        distribution: 'temurin'
+        distribution: 'zulu'
         cache: maven
     - name: Set up OLauncher
       run: bash decompile.sh && bash init.sh && bash applyPatches.sh
@@ -42,30 +42,8 @@ jobs:
     - name: Generate redistributable
       run: bash genredist.sh
     - name: Upload redistributable
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       id: upload-artifact
       with:
         name: OLauncher Redistributable JAR
         path: olauncher-*-redist.jar
-
-  draft-release:
-    if: ${{ github.ref_type == 'tag' }}
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download redistributable jar
-        uses: actions/download-artifact@v4
-        id: download-artifact
-        with:
-          artifact-ids: ${{ needs.build.outputs.artifact-id }}
-          merge-multiple: true
-          path: redist
-      - name: Create release draft with redistributable
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          ARTIFACT_PATH: ${{ steps.download-artifact.outputs.download-path }}
-        run: gh release create "$RELEASE_TAG" --draft --verify-tag --title "$RELEASE_TAG" "$ARTIFACT_PATH"/*.jar
