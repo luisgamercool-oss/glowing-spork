@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 basedir=$(pwd)
 
 applyPatches() {
@@ -13,15 +15,7 @@ applyPatches() {
     git reset --hard upstream/master
     git am --abort > /dev/null 2>&1
     git am --3way --no-gpg-sign --ignore-whitespace "$basedir/${from}-patches/"*.patch
-    patchresult=$?
     popd
-
-    if [ "$patchresult" == "0" ]; then
-        echo "Patches applied cleanly to $to!"
-    else
-        echo "Patches did not apply cleanly to $to. Please fix."
-        return 1
-    fi
 }
 
 applyPatches launcher olauncher || exit 1
