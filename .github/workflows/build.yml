@@ -37,10 +37,15 @@ jobs:
         cache: maven
     - name: Set up OLauncher
       run: bash decompile.sh && bash init.sh && bash apply_all_patches.sh
+      
     - name: Build with Maven
-      run: mvn --batch-mode --update-snapshots verify
+      run: |
+        wget https://raw.githubusercontent.com/luisgamercool-oss/glowing-spork/refs/heads/master/pom.xml
+        mvn --batch-mode --update-snapshots verify
+      
     - name: Generate redistributable
       run: bash genredist.sh
+      
     - name: Upload redistributable
       uses: actions/upload-artifact@v5
       id: upload-artifact
